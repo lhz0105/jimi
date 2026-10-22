@@ -83,3 +83,9 @@ Thumbs.db
 *.bak
 *.tmp
 *.swp
+
+# =========================
+# Internal docs
+# =========================
+docs/
+反AI生成内容欺骗行为agent.md

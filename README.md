@@ -109,14 +109,12 @@ match_project/
 │  ├─ scripts/              启动、模型下载、知识库导入、冒烟命令
 │  └─ tests/                127 个后端测试
 ├─ frontend/                管理观测台（Vue 3，深色）
-├─ demo_platform/
-│  ├─ backend/              独立演示后端（FastAPI + SQLite）
-│  └─ frontend/             模拟客服台（Vue 3，白 + 少量紫）
-├─ docs/                    PPT 语料与技术选型材料
-└─ 反AI生成内容欺骗行为agent.md   原始需求
+└─ demo_platform/
+   ├─ backend/              独立演示后端（FastAPI + SQLite）
+   └─ frontend/             模拟客服台（Vue 3，白 + 少量紫）
 ```
 
-> `backend/data/`、`demo_platform/backend/data/`、`.env`、`node_modules/`、`.venv/`、生成的 PPT/报告等不会提交到 Git。
+> `backend/data/`、`demo_platform/backend/data/`、`.env`、`node_modules/`、`.venv/`、生成的 PPT/报告，以及内部需求与 PPT 语料不会提交到公开仓库。
 
 ---
 
@@ -300,8 +298,7 @@ cd ../demo_platform/frontend && npm run build
 
 - `backend/README.md`：后端接口、流水线、RAG、复核与先例细节
 - `demo_platform/README.md`：演示平台接入方式与演示流程
-- `docs/ppt_prompt.md`：业务/技术评审 PPT 语料
-- `docs/ppt_tech_selection_prompt.md`：主要技术选型 PPT 语料
+- PPT 语料与内部需求文档保留在本地，不随公开仓库分发。
 
 ---
 
