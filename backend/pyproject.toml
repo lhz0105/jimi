@@ -1,0 +1,33 @@
+[project]
+name = "match-agent-backend"
+version = "0.1.0"
+description = "反AI生成内容欺骗行为 — 高可观测多 Agent 后端"
+requires-python = ">=3.13"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = ["data", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "RUF", "SIM", "PERF", "ISC"]
+ignore = [
+    "B008",   # FastAPI 的 Depends/Query 必须写在默认参数位置
+    "RUF012", # pydantic/BaseChatModel 的类级可变默认值由其自身机制处理
+    "SIM105", # contextlib.suppress 可读性未必更好
+    # 中文代码库：全角标点在字符串/注释/文档串中属正常（否则 900+ 误报）
+    "RUF001",
+    "RUF002",
+    "RUF003",
+    "E501",   # 中文行宽与字符数不成比例，交由格式化工具处理
+    "DTZ",    # 展示/落盘用本地时间戳（毫秒 epoch），不涉及时区语义
+    "ISC004", # 多行中文提示词拼接
+    "B905",   # zip 严格性：内部数据长度有保证
+    "PERF401",  # 循环构造列表的写法可读性更好
+]
+
+[tool.ruff.lint.per-file-ignores]
+# 脚本需要先 sys.path.insert 再 import
+"scripts/*.py" = ["E402"]
+# 测试允许更宽松的断言与未使用变量（fixture 依赖）
+"tests/**" = ["B017", "RUF059", "F841"]

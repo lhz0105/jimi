@@ -1,0 +1,235 @@
+# 触发判断规则集（不调用 LLM）。按 priority 降序求值，最高优先级命中者决定决策。
+# 可通过 GET/PUT /api/admin/rules 读取或整体替换（替换前会做 schema 校验）。
+#
+# 两条判定通道（条件之间为 AND，条件内部为 OR）：
+#   1) 关键词/正则/附件/渠道 —— 零成本、精确匹配
+#   2) 语义相似度（any_semantic）—— 复用本地向量模型，把客户文本与下方锚点短语做余弦相似度，
+#      用于捕捉"没说到'退款'二字但意图相同"的说法（如"这钱我不要了，你们看着办"）
+version: "2026-10-11.1"
+
+defaults:
+  need_analysis: false
+  require_confirm: true
+  risk_hint: null
+
+# ------------------------------ 语义锚点 ------------------------------
+# 锚点短语按"文档"编码，客户文本按标点切成子句、按"查询"编码，取 max(子句×锚点) 作为相似度。
+# 阈值经本地 BGE-small-zh 实测标定（正/负样本分离区间见注释）；误报偏高就上调，漏报就下调。
+semantic:
+  enabled: true
+  threshold: 0.68 # 全局默认；下列分组阈值按标定结果覆盖
+  thresholds:
+    refund_intent: 0.70 # 实测：正样本 ≥0.78，无关寒暄 ≤0.63
+    product_damage: 0.66 # 实测：正样本 ≥0.69，无关寒暄 ≤0.63（可分性最窄，通常也会被 refund_intent 兜住）
+    medical_claim: 0.70 # 实测：正样本 ≥0.75，无关表述 ≤0.64
+    seeding_intent: 0.68 # 实测：正样本 ≥0.77，无关表述 ≤0.60
+  # 语义命中等级（相对分组阈值）：
+  #   分数 ≥ 阈值 + full_margin    → 完全命中
+  #   分数 ≥ 阈值 + suspect_margin → 疑似
+  #   其余（已过阈值）              → 普通
+  # 注意：这是“语义匹配强度”，与案件风险（高/中/低）是两个维度。
+  level_full_margin: 0.10
+  level_suspect_margin: 0.04
+  max_clauses: 8
+  anchors:
+    refund_intent: # 退款/退货/索赔意图
+      - 要求退款
+      - 申请退货
+      - 退还货款
+      - 索赔赔偿
+      - 我要退钱
+      - 要求把货款退给我
+      - 申请售后退款
+    product_damage: # 商品损坏描述（锚点写长写具体，避免泛化句误命中）
+      - 收到的商品已经破损
+      - 产品到货就是坏的
+      - 东西摔碎了没法用
+      - 商品有质量问题无法使用
+      - 拆开发现商品损坏
+    medical_claim: # 医疗/皮肤问题索赔
+      - 使用后皮肤过敏
+      - 使用后皮肤严重受损
+      - 医院诊断证明书
+      - 皮肤科就诊记录
+    seeding_intent: # 种草/推广内容
+      - 强烈推荐这款产品
+      - 使用体验分享推荐
+      - 好物推荐分享帖
+      - 这款产品值得入手
+      - 真实使用测评分享
+
+# ------------------------------ 同义词归一 ------------------------------
+synonyms:
+  退款:
+    - 退钱
+    - 退我钱
+    - 退回款项
+    - 要退
+    - 只退款
+  破损:
+    - 碎了
+    - 碎的
+    - 摔烂
+    - 裂了
+    - 断裂
+    - 坏掉
+    - 坏了
+    - 摔坏
+    - 残缺
+    - 碎裂
+  诊断:
+    - 诊断单
+    - 诊断书
+    - 诊断证明
+    - 病历
+    - 就医记录
+  过敏:
+    - 过敏反应
+    - 皮肤过敏
+  种草:
+    - 安利
+    - 好物种草
+    - 好物分享
+
+rules:
+  # —— 负规则：纯物流咨询不触发分析 ——
+  - id: logistics_only
+    priority: 300
+    description: 纯物流/发货咨询，无索赔与质量诉求
+    when:
+      any_keywords: [物流, 快递, 发货, 什么时候到, 运费, 签收]
+      none_keywords: [退款, 破损, 过敏, 赔偿, 假货, 烂脸, 诊断, 少发, 漏发]
+    action:
+      need_analysis: false
+
+  # —— 医疗/皮肤问题索赔 ——
+  - id: medical_doc_claim
+    priority: 110
+    description: 涉及过敏/烂脸/就医证明的索赔
+    scenario: medical_cert_claim
+    when:
+      any_keywords: [过敏, 烂脸, 诊断, 门诊, 激素, 医院, 皮肤科, 红肿, 发炎, 灼伤, 就医, 医生]
+    action:
+      need_analysis: true
+      require_confirm: true
+      risk_hint: high
+
+  - id: medical_semantic
+    priority: 108
+    description: 语义命中医疗索赔（未出现关键词的表述）
+    scenario: medical_cert_claim
+    when:
+      any_semantic: [medical_claim]
+    action:
+      need_analysis: true
+      require_confirm: true
+      risk_hint: high
+
+  # —— 退款+图片：典型 AI 伪造图片索赔场景 ——
+  - id: refund_with_image
+    priority: 100
+    description: 退款/赔偿诉求且窗口内有图片
+    scenario: product_damage_claim
+    when:
+      any_keywords: [退款, 退货, 赔偿, 补偿, 假货, 假冒]
+      has_image: true
+    action:
+      need_analysis: true
+      require_confirm: true
+      risk_hint: high
+
+  - id: refund_semantic_with_image
+    priority: 98
+    description: 语义命中退款意图且窗口内有图片
+    scenario: product_damage_claim
+    when:
+      any_semantic: [refund_intent]
+      has_image: true
+    action:
+      need_analysis: true
+      require_confirm: true
+      risk_hint: high
+
+  - id: damage_semantic_with_image
+    priority: 97
+    description: 语义命中商品损坏描述且窗口内有图片（如"照片就是碎的"）
+    scenario: product_damage_claim
+    when:
+      any_semantic: [product_damage]
+      has_image: true
+    action:
+      need_analysis: true
+      require_confirm: true
+      risk_hint: high
+
+  # —— 仅有破损描述（无图）：低风险提示，可分析文字一致性 ——
+  - id: damage_text_only
+    priority: 90
+    description: 提及破损但窗口内无图
+    scenario: product_damage_claim
+    when:
+      any_keywords: [破损, 碎了, 裂了, 坏了, 变形, 少发, 漏发]
+      has_image: false
+    action:
+      need_analysis: true
+      require_confirm: true
+      risk_hint: medium
+
+  - id: damage_semantic_text_only
+    priority: 89
+    description: 语义命中商品损坏描述但窗口内无图
+    scenario: product_damage_claim
+    when:
+      any_semantic: [product_damage]
+      has_image: false
+    action:
+      need_analysis: true
+      require_confirm: true
+      risk_hint: medium
+
+  - id: refund_semantic_text_only
+    priority: 88
+    description: 语义命中退款意图但窗口内无图
+    scenario: product_damage_claim
+    when:
+      any_semantic: [refund_intent]
+      has_image: false
+    action:
+      need_analysis: true
+      require_confirm: true
+      risk_hint: medium
+
+  # —— 种草内容（渠道判定） ——
+  - id: seeding_channel
+    priority: 85
+    description: 来自种草渠道的内容
+    scenario: seeding_post
+    when:
+      channel_in: [seed_post, seeding, demo_seeding]
+    action:
+      need_analysis: true
+      require_confirm: false
+      risk_hint: low
+
+  # —— 种草内容（关键词判定） ——
+  - id: seeding_keywords
+    priority: 80
+    description: 文案含种草/推广特征词
+    scenario: seeding_post
+    when:
+      any_keywords: [种草, 安利, 避雷, 回购, 测评, 踩雷, 推荐这家, 亲测]
+    action:
+      need_analysis: true
+      require_confirm: false
+      risk_hint: low
+
+  - id: seeding_semantic
+    priority: 79
+    description: 语义命中种草/测评意图
+    scenario: seeding_post
+    when:
+      any_semantic: [seeding_intent]
+    action:
+      need_analysis: true
+      require_confirm: false
+      risk_hint: low

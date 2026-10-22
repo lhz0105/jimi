@@ -1,0 +1,27 @@
+{
+  "name": "jimi-evidence-demo",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "迹觅·Evidence 客服演示台前端（Vue 3）：白 + 少量紫色，对接演示平台后端",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview --port 4174",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "axios": "^1.20.0",
+    "marked": "^18.1.1",
+    "vue": "^3.5.44"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^26.6.5",
+    "@vitejs/plugin-vue": "^6.0.10",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.4",
+    "vue-tsc": "^3.3.13"
+  }
+}

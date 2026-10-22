@@ -1,0 +1,33 @@
+/** 统一线性图标集（24 网格 / 1.75 描边），避免 emoji 作为结构性图标。 */
+export const ICON_PATHS = {
+  chat: 'M4 5h16v11H8l-4 4z',
+  send: 'M4 12l16-8-6 16-2.5-6.5z',
+  image: 'M4 5h16v14H4zM4 15l4.5-4.5 3.5 3.5 3-3L20 15M15 9h.01',
+  plus: 'M12 5v14M5 12h14',
+  sparkle: 'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z',
+  shield: 'M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z',
+  refresh: 'M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5',
+  close: 'M6 6l12 12M18 6L6 18',
+  copy: 'M8 8V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-3M5 8h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2z',
+  check: 'M20 6L9 17l-5-5',
+  alert: 'M12 3l9 16H3zM12 9v5M12 17h.01',
+  info: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 8h.01M11 12h1v4h1',
+  chevronDown: 'M6 9l6 6 6-6',
+  chevronRight: 'M9 6l6 6-6 6',
+  arrowLeft: 'M19 12H5M12 19l-7-7 7-7',
+  search: 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3',
+  upload: 'M12 16V4M7 9l5-5 5 5M4 20h16',
+  play: 'M6 4l14 8-14 8z',
+  pause: 'M8 4h3v16H8zM13 4h3v16h-3z',
+  stop: 'M6 6h12v12H6z',
+  clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2',
+  zap: 'M13 2L4 14h7l-1 8 9-12h-7z',
+  brain: 'M9 4a3 3 0 0 0-3 3 3 3 0 0 0-1 5.8V15a3 3 0 0 0 3 3h1v3M15 4a3 3 0 0 1 3 3 3 3 0 0 1 1 5.8V15a3 3 0 0 1-3 3h-1v3M12 4v18',
+  tool: 'M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 1 5.4-5.4l1.6 1.6-2.5 2.5',
+  database: 'M12 8c5 0 8-1.3 8-3s-3-3-8-3-8 1.3-8 3 3 3 8 3zM4 5v14c0 1.7 3 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3 3 8 3s8-1.3 8-3',
+  fileText: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h4',
+  scale: 'M12 3v18M7 7l-4 8h8zM17 7l-4 8h8zM5 7h14',
+  trash: 'M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13M10 11v5M14 11v5',
+} as const
+
+export type IconName = keyof typeof ICON_PATHS

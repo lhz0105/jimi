@@ -1,0 +1,35 @@
+# --- Web ---
+fastapi>=0.115
+uvicorn[standard]>=0.34
+sse-starlette>=2.1
+python-multipart>=0.0.18
+pydantic>=2.10
+pydantic-settings>=2.7
+orjson>=3.10
+httpx>=0.28
+
+# --- Agent / LLM ---
+langgraph>=1.0
+langchain>=1.0
+langchain-core>=1.0
+langchain-openai>=1.0
+tavily-python>=0.5
+
+# --- RAG ---
+# fastembed: ONNX 本地推理（免 torch，Windows/CPU 友好），模型 BAAI/bge-small-zh-v1.5
+fastembed>=0.4
+chromadb>=1.0
+jieba>=0.42.1
+rank-bm25>=0.2.2
+numpy>=1.26
+
+# --- Image local forensics ---
+Pillow>=11.0
+imagehash>=4.3.1
+
+# --- Config / templates ---
+PyYAML>=6.0
+Jinja2>=3.1
+
+# --- DB ---
+aiosqlite>=0.20

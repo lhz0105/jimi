@@ -1,0 +1,8 @@
+fastapi>=0.115
+pydantic-settings>=2.7
+uvicorn[standard]>=0.34
+httpx>=0.28
+aiosqlite>=0.20
+python-multipart>=0.0.18
+pillow>=11.0
+orjson>=3.10
