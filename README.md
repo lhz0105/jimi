@@ -95,6 +95,7 @@ FastAPI Agent 服务（单 worker）
 
 ```text
 match_project/
+├─ LICENSE                  PolyForm Noncommercial 1.0.0
 ├─ backend/                 Agent API、LangGraph 流水线、RAG、SQLite
 │  ├─ app/
 │  │  ├─ agent/             图、节点、工具、提示词、预算、证据
@@ -314,4 +315,9 @@ cd ../demo_platform/frontend && npm run build
 
 ## License
 
-当前仓库未附带开源许可证。如需公开分发或商用，请先补充 `LICENSE` 文件。
+本项目采用 **PolyForm Noncommercial License 1.0.0**（SPDX: `PolyForm-Noncommercial-1.0.0`）。
+
+- 允许个人学习、研究、教育、公益等非商业用途；
+- 禁止商业用途；
+- 本项目属于 source-available，不是 OSI 开源许可证；
+- 完整条款见 [LICENSE](LICENSE)；如需商业授权，请联系版权人。
